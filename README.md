@@ -1,6 +1,6 @@
 # Super Cereal 🥣
 
-Serialization without any weird syntax and with all the functionality you need.
+Serialize and deserialize any object without any weird syntax.
 
 **TL;DR:** You get to keep your lovely graph structure (even if its circular 🤯) and all of your lovely class methods too.
 
