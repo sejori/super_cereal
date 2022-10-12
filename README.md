@@ -39,7 +39,7 @@ freshBob.addFriend(steve);
 console.log(freshBob.friends);
 ```
 
-The Al-Gore-ithm does a depth-first-search, leaving unique IDs on non-primitive values in the data structure to know whether its seen them before. This allows for serialization of nested objects without getting stuck in circular reference loops. There's a bit more too it so read the code if you're curious.
+The Al-Gore-ithm does a depth-first-search, leaving unique IDs on non-primitive values in the data structure to know whether its seen them before. This allows for serialization of nested objects without getting stuck in circular reference loops. There's a bit more too it than just that, read the code if you're curious.
 
 Simply instantiate a `Store` then make your classes extend `Model` and call `super(store, arguments)` in your constuctors. This allows the store to reinstantiate your classes before  using `Object.assign` to apply deserialized object values.
 
