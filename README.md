@@ -29,8 +29,8 @@ const bob = new Person("Bob");
 jim.addFriend(bob);
 
 const bobId = bob.save();
-
 const freshBob = store.load(bobId) as Person;
+
 const steve = new Person("Steve");
 freshBob.addFriend(steve);
 
