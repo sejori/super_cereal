@@ -7,7 +7,8 @@ export class Store {
     this.constructors.set("Array", () => [])
     this.constructors.set("Function", () => function () {})
   }
-
+  
+  // deno-lint-ignore no-explicit-any
   save(node: any) {
     // DFS - assign unique id to nodes for breadcrumbs
     // then replace refs with linked node id and stringify to items
