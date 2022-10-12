@@ -7,23 +7,29 @@
 ```
 import { Store, Model } from "./mod.ts";
 
-const store = new Store();
+class Person extends Model {
+  name: string;
+  friends: Person[] = [];
 
-class Hobby extends Model {
-  #title: string;
-  
-  constructor(title: string) {
+  constructor(name: string) {
     super(store, arguments);
-    this.#title = title;
+    this.name = name;
   }
 
-  getTitle () { return this.#title };
+  addFriend(friend: Person) {
+    this.friends.push(friend);
+    friend.friends.push(this);
+  }
 }
 
-const fencing = new Hobby("fencing");
-const storedId = fencing.save();
+const jim = new Person("Jim");
+const bob = new Person("Bob");
+jim.addFriend(bob);
 
-const deserializedFencing = store.load(storedId) as Hobby;
+const bobId = bob.save();
+const freshBob = store.load(bobId) as Person;
+
+console.log(freshBob.friends[0].name);
 ```
 
 The Al-Gore-itms use some clever recursive logic to leave unique IDs on objects as they depth first search the data structure. This allows for serialization of nested objects without getting stuck in circular reference loops.
