@@ -7,6 +7,8 @@
 ```
 import { Store, Model } from "./mod.ts";
 
+const store = new Store();
+
 class Person extends Model {
   name: string;
   friends: Person[] = [];
