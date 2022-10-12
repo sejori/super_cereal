@@ -1,6 +1,6 @@
 # Super Cereal 🥣
 
-TL;DR: you get to keep your lovely graph structure and all the lovely methods on your objects too.
+**TL;DR:** you get to keep your lovely graph structure and all the lovely methods on your objects too.
 
 ## But how?
 
