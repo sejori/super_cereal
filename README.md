@@ -1,5 +1,6 @@
-# cerealizer
-Super cereal serialization without any weirdness. Retains methods and circular references 🥣
+# Super Cereal 🥣
+
+TL;DR: you get to keep your lovely graph structure and all the lovely methods on your objects too.
 
 ## But how?
 
@@ -27,9 +28,7 @@ const deserializedFencing = store.load(storedId) as Hobby;
 
 The Al-Gore-itms use some clever recursive logic to leave unique IDs on objects as they depth first search the data structure. This allows for serialization of nested objects without getting stuck in circular reference loops.
 
-Simply instantiate a `Store` then make your classes extend `Model` and call `super(store, arguments)` in your constuctors. This allows the store to reinstantiate your classes before  using `Object.assign` to apply deserialized object values. 
-
-You get to keep your lovely graph structure and all the lovely methods on your objects too.
+Simply instantiate a `Store` then make your classes extend `Model` and call `super(store, arguments)` in your constuctors. This allows the store to reinstantiate your classes before  using `Object.assign` to apply deserialized object values.
 
 ## But why?
 
