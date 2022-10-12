@@ -1,6 +1,8 @@
 # Super Cereal 🥣
 
-**TL;DR:** Serialize/deserialize your data while keeping your lovely, circular graph structure and all of your lovely class methods too.
+Serialization without any weird syntax and with all the functionality you need.
+
+**TL;DR:** You get to keep your lovely graph structure (even if its circular 🤯) and all of your lovely class methods too.
 
 ## But how?
 
