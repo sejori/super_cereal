@@ -1,6 +1,6 @@
 # Super Cereal 🥣
 
-**TL;DR:** you get to keep your lovely graph structure and all your lovely class methods too.
+**TL;DR:** you get to keep your lovely graph structure (even if its circular 🤯) and all your lovely class methods too.
 
 ## But how?
 
