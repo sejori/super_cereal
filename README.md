@@ -27,9 +27,12 @@ const bob = new Person("Bob");
 jim.addFriend(bob);
 
 const bobId = bob.save();
-const freshBob = store.load(bobId) as Person;
 
-console.log(freshBob.friends[0].name);
+const freshBob = store.load(bobId) as Person;
+const steve = new Person("Steve");
+freshBob.addFriend(steve);
+
+console.log(freshBob.friends);
 ```
 
 The Al-Gore-itms use some clever recursive logic to leave unique IDs on objects as they depth first search the data structure. This allows for serialization of nested objects without getting stuck in circular reference loops.
