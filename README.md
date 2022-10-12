@@ -32,5 +32,7 @@ Simply instantiate a `Store` then make your classes extend `Model` and call `sup
 
 ## But why?
 
-I don't want to use complex databases. I just want to serialize and store, whether in the browser on the server. The goal was to require minimal additional code beyond regular looking JS/TS and I think this fits the bill nicely. The only slight caveat is that you have to use `store.load(id) as ClassName;` to keep accurate TS syntax highlighting (there is currently no way for TS to infer this an generic types don't work with recursion).
+I don't want to use complex databases. I just want to serialize and store, whether in the browser on the server. 
+
+The goal was to require minimal additional code beyond regular looking JS/TS and I think this fits the bill nicely, just extend from `Model` and call `super(store, arguments)` in your constructors. The only slight caveat is that you have use `store.load(id) as ClassName;` to keep accurate TS syntax highlighting (there is currently no way for TS to infer this an generic types don't work with recursion).
 
