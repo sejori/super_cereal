@@ -39,7 +39,7 @@ freshBob.addFriend(steve);
 console.log(freshBob.friends);
 ```
 
-The Al-Gore-ithm does a depth-first-search, leaving unique IDs on non-primitive values. It then serializes and stores objects by ID, replacing all refs with their corresponding IDs to "unlink" the structure so we never get stuck in circular reference loops.
+The Al-Gore-ithm does a depth-first-search, leaving unique IDs on non-primitive values. It then serializes and stores objects by ID, replacing all refs with the corresponding ID to "unlink" the structure so it never gets stuck in a circular reference loop.
 
 First instantiate a `Store`, then make your classes extend `Model` and call `super(store, arguments)` in your constuctors. This allows the store to hold onto constructor clones that reinstantiate your classes before using `Object.assign` to apply the deserialized values.
 
