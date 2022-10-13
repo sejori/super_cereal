@@ -41,11 +41,11 @@ console.log(freshBob.friends);
 
 The Al-Gore-ithm does a depth-first-search, leaving unique IDs on non-primitive values. It then serializes and stores objects by ID, replacing all refs with the corresponding ID to "unlink" the structure so it never gets stuck in a circular reference loop.
 
-First instantiate a `Store`, then make your classes extend `Model` and call `super(store, arguments)` in your constuctors. This allows the store to hold onto constructor clones that reinstantiate your classes before using `Object.assign` to apply the deserialized values.
+First instantiate a `Store`, then make your classes extend `Model` and call `super(store, arguments)` in their constuctors. This allows the store to hold onto constructor clones that reinstantiate the classes before using `Object.assign` to apply deserialized values.
 
 ## But why?
 
 I don't want to use complex databases. I just want to serialize my data and then store it. No matter how complex the structure or whether in the browser on the server. 
 
-The goal was to require minimal additional code beyond regular looking JS/TS and I think this fits the bill nicely, just extend from `Model` and call `super(store, arguments)` in your constructors. The only slight caveat is that you have use `store.load(id) as ClassName` to keep accurate TS syntax highlighting (there is currently no way for TS to infer this and generic types don't work with recursion).
+The goal was to require minimal additional code beyond regular looking JS/TS and I think this fits the bill nicely, just extend from `Model` and call `super(store, arguments)` in constructors. The only slight caveat is that you have use `store.load(id) as ClassName` to keep accurate TS syntax highlighting (there is currently no way for TS to infer this and generic types don't work with recursion).
 
