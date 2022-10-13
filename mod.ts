@@ -4,7 +4,7 @@ export class Store {
   items = new Map()
 
   constructor() {
-    this.constructors.set("Object", () => {})
+    this.constructors.set("Object", () => ({}))
     this.constructors.set("Array", () => [])
     this.constructors.set("Function", () => function () {})
   }
