@@ -7,6 +7,8 @@ export class Store {
     this.constructors.set("Object", () => ({}))
     this.constructors.set("Array", () => [])
     this.constructors.set("Function", () => function () {})
+    this.constructors.set("Set", () => new Set())
+    this.constructors.set("Map", () => new Map())
   }
   
   // deno-lint-ignore no-explicit-any
@@ -44,7 +46,7 @@ export class Store {
 
       const deserialized = objType !== "Function"
         ? JSON.parse(nodeString)
-        : new Function()
+        : new Function() // TODO: recreate function args and body from string
 
       const nodeObj = constructor()
       Object.assign(nodeObj, deserialized)
