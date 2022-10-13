@@ -45,7 +45,6 @@ export class Store {
       const deserialized = objType !== "Function"
         ? JSON.parse(nodeString)
         : new Function()
-      console.log(nodeId, deserialized)
 
       const nodeObj = constructor()
       Object.assign(nodeObj, deserialized)
