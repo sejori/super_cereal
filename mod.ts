@@ -4,6 +4,7 @@ export class Store {
   items = new Map()
 
   constructor() {
+    this.constructors.set("Object", () => {})
     this.constructors.set("Array", () => [])
     this.constructors.set("Function", () => function () {})
   }
@@ -44,17 +45,20 @@ export class Store {
       const deserialized = objType !== "Function"
         ? JSON.parse(nodeString)
         : new Function()
+      console.log(nodeId, deserialized)
 
       const nodeObj = constructor()
       Object.assign(nodeObj, deserialized)
-
-      parsed.set(nodeObj[this.code], nodeObj)
-      delete nodeObj[this.code]
-
+      parsed.set(nodeId, nodeObj)
+ 
       for (const key in nodeObj) {
+        // remove store code property
+        if (nodeObj[key] === nodeId) delete nodeObj[key]
+        // replace Ids with refs
         if (parsed.has(nodeObj[key])) {
           nodeObj[key] = parsed.get(nodeObj[key])
         } else if (this.items.has(nodeObj[key])) {
+          // otherwise recursively parse
           nodeObj[key] = parseNode(nodeObj[key])
         }
       }

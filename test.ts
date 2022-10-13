@@ -51,4 +51,23 @@ Deno.test("UTIL: Storage", async (t) => {
     assert(freshJim.hobbies[0].getTitle() === "fencing")
     assert(freshJim.friends[0].name === "Bob")
   }) 
+
+  // await t.step("array retains function and other non-primitive items", () => {
+  //   const testArray = [
+  //     { hello: "world" },
+  //     [ "I'm a nested array", 123 ],
+  //     function addNums(x: number, y: number) { return x + y },
+  //     (x: number, y: number) => x * y, 
+  //   ]
+  //   const arrayId = store.save(testArray)
+
+  //   // deno-lint-ignore no-explicit-any
+  //   const freshArray = store.load(arrayId) as Array<any>
+
+  //   assert(freshArray[0].hello = "world")
+  //   // deno-lint-ignore no-explicit-any
+  //   assert(freshArray[1].every((item: any) => [ "I'm a nested array", 123 ].some(i => item === i)))
+  //   assert(freshArray[2](1,2) === 3)
+  //   assert(freshArray[3](5,2) === 10)
+  // }) 
 })
