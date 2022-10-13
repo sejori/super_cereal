@@ -53,11 +53,12 @@ export class Store {
       for (const key in nodeObj) {
         // remove store code property
         if (nodeObj[key] === nodeId) delete nodeObj[key]
-        // replace Ids with refs
+
         if (parsed.has(nodeObj[key])) {
+          // replace id with object ref
           nodeObj[key] = parsed.get(nodeObj[key])
         } else if (this.items.has(nodeObj[key])) {
-          // otherwise recursively parse
+          // otherwise deserialize next object from id
           nodeObj[key] = parseNode(nodeObj[key])
         }
       }
