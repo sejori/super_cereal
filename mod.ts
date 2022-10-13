@@ -9,6 +9,7 @@ export class Store {
     this.constructors.set("Function", () => function () {})
     this.constructors.set("Set", () => new Set())
     this.constructors.set("Map", () => new Map())
+    this.constructors.set("Date", () => new Date())
   }
   
   // deno-lint-ignore no-explicit-any
