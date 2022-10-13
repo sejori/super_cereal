@@ -1,3 +1,5 @@
+import { parseFcnString } from "./utils.ts"
+
 export class Store {
   code = crypto.randomUUID()
   constructors = new Map()
@@ -6,10 +8,16 @@ export class Store {
   constructor() {
     this.constructors.set("Object", () => ({}))
     this.constructors.set("Array", () => [])
-    this.constructors.set("Function", () => function () {})
     this.constructors.set("Set", () => new Set())
     this.constructors.set("Map", () => new Map())
     this.constructors.set("Date", () => new Date())
+
+    // special case for Functions
+    this.constructors.set("Function", (fcnString: string) => {
+      const fcn = parseFcnString(fcnString)
+      console.log(fcn(1,2))
+      return fcn
+    })
   }
   
   // deno-lint-ignore no-explicit-any
@@ -45,12 +53,11 @@ export class Store {
       const nodeString = this.items.get(nodeId)
       if (!nodeString) throw new Error(`No node string found for item with id ${nodeId}`)
 
-      const deserialized = objType !== "Function"
-        ? JSON.parse(nodeString)
-        : new Function() // TODO: recreate function args and body from string
-
-      const nodeObj = constructor()
-      Object.assign(nodeObj, deserialized)
+      const nodeObj = objType === "Function"
+        // Functions are special
+        ? constructor(nodeString)
+        : Object.assign(constructor(), JSON.parse(nodeString))
+        
       parsed.set(nodeId, nodeObj)
  
       for (const key in nodeObj) {

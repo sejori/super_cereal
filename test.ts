@@ -52,22 +52,36 @@ Deno.test("UTIL: Storage", async (t) => {
     assert(freshJim.friends[0].name === "Bob")
   }) 
 
-  await t.step("array retains function and other non-primitive items", () => {
+  await t.step("array retains all non-primitive items", () => {
+    const now = new Date()
+
     const testArray = [
       { hello: "world" },
       [ "I'm a nested array", 123 ],
+      new Map().set("key", "value"),
+      new Set().add(5),
+      new Date(now),
       function addNums(x: number, y: number) { return x + y },
-      (x: number, y: number) => x * y, 
+      function (x: number) { return x*x },
+      (x: number) => { return x * x },
+      (x: number, y: number) => x * y
     ]
     const arrayId = store.save(testArray)
 
     // deno-lint-ignore no-explicit-any
     const freshArray = store.load(arrayId) as Array<any>
 
+    console.log(freshArray[2])
+
     assert(freshArray[0].hello = "world")
     // deno-lint-ignore no-explicit-any
     assert(freshArray[1].every((item: any) => [ "I'm a nested array", 123 ].some(i => item === i)))
-    assert(freshArray[2](1,2) === 3)
-    assert(freshArray[3](5,2) === 10)
+    assert(freshArray[2].get("key") === "value")
+    assert(freshArray[3].has(5))
+    assert(freshArray[4].valueOf() === now.valueOf())
+    assert(freshArray[5](1,2) === 3)
+    assert(freshArray[6](5) === 25)
+    assert(freshArray[7](3) === 9)
+    assert(freshArray[8](7, 8) === 56)
   }) 
 })
