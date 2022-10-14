@@ -40,26 +40,26 @@ Deno.test("UTIL: Storage", async (t) => {
   const jim = new Person("Jim")
   bob.addFriend(jim)
 
-  await t.step("circular ref object retains methods after serializing and deserializing", () => {
-    assert(bob.name === "Bob" && bob.friends.includes(jim))
+  // await t.step("circular ref object retains methods after serializing and deserializing", () => {
+  //   assert(bob.name === "Bob" && bob.friends.includes(jim))
 
-    const jimId = jim.save()
-    const freshJim = store.load(jimId) as Person
-    freshJim.addHobby(fencing)
+  //   const jimId = jim.save()
+  //   const freshJim = store.load(jimId) as Person
+  //   freshJim.addHobby(fencing)
 
-    assert(jim !== freshJim)
-    assert(freshJim.hobbies[0].getTitle() === "fencing")
-    assert(freshJim.friends[0].name === "Bob")
-  }) 
+  //   assert(jim !== freshJim)
+  //   assert(freshJim.hobbies[0].getTitle() === "fencing")
+  //   assert(freshJim.friends[0].name === "Bob")
+  // }) 
 
-  await t.step("array retains all non-primitive items", () => {
+  await t.step("array retains all non-primitive items & sets retain primitive types", () => {
     const now = new Date()
 
     const testArray = [
       { hello: "world" },
       [ "I'm a nested array", 123 ],
-      new Map().set("key", "value"),
-      new Set().add(5),
+      new Map().set("key1", 1).set("key2", "value2"),
+      new Set().add(5).add(10),
       new Date(now),
       function addNums(x: number, y: number) { return x + y },
       function (x: number) { return x*x },
@@ -71,13 +71,11 @@ Deno.test("UTIL: Storage", async (t) => {
     // deno-lint-ignore no-explicit-any
     const freshArray = store.load(arrayId) as Array<any>
 
-    console.log(freshArray[2])
-
     assert(freshArray[0].hello = "world")
     // deno-lint-ignore no-explicit-any
     assert(freshArray[1].every((item: any) => [ "I'm a nested array", 123 ].some(i => item === i)))
-    assert(freshArray[2].get("key") === "value")
-    assert(freshArray[3].has(5))
+    assert(freshArray[2].get("key1") === 1 && freshArray[2].get("key2") === "value2")
+    assert(freshArray[3].has(5) && freshArray[3].has(10))
     assert(freshArray[4].valueOf() === now.valueOf())
     assert(freshArray[5](1,2) === 3)
     assert(freshArray[6](5) === 25)

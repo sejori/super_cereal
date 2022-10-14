@@ -1,4 +1,4 @@
-import { parseFcnString } from "./utils.ts"
+import { serialize, parseFcnString } from "./utils.ts"
 
 export class Store {
   code = crypto.randomUUID()
@@ -6,16 +6,21 @@ export class Store {
   items = new Map()
 
   constructor() {
-    this.constructors.set("Object", () => ({}))
-    this.constructors.set("Array", () => [])
-    this.constructors.set("Set", () => new Set())
-    this.constructors.set("Map", () => new Map())
-    this.constructors.set("Date", () => new Date())
-
-    // special case for Functions
-    this.constructors.set("Function", (fcnString: string) => {
-      const fcn = parseFcnString(fcnString)
-      console.log(fcn(1,2))
+    this.constructors.set("Object", (nodeStr: string): Record<string, unknown> => Object.assign({}, JSON.parse(nodeStr)))
+    this.constructors.set("Array", (nodeStr: string): unknown[] => Object.assign([], JSON.parse(nodeStr)))
+    this.constructors.set("Date", (nodeStr: string) => new Date(nodeStr))
+    this.constructors.set("Set", (nodeStr: string) => {
+      const set = new Set()
+      this.constructors.get("Array")(nodeStr).forEach((item: string) => set.add(item))
+      return set
+    })
+    this.constructors.set("Map", (nodeStr: string) => {
+      const map = new Map()
+      this.constructors.get("Array")(nodeStr).forEach(([key,value]: [key: string, value: string]) => map.set(key, value))
+      return map
+    })
+    this.constructors.set("Function", (nodeStr: string) => {
+      const fcn = parseFcnString(nodeStr)
       return fcn
     })
   }
@@ -34,10 +39,7 @@ export class Store {
       }
     }
 
-    const serialized = typeof node !== "function"
-      ? JSON.stringify(node)
-      : node.toString() // TODO: check this
-
+    const serialized = serialize(node)
     this.items.set(node[this.code], serialized)
     return node[this.code]
   }
@@ -53,11 +55,7 @@ export class Store {
       const nodeString = this.items.get(nodeId)
       if (!nodeString) throw new Error(`No node string found for item with id ${nodeId}`)
 
-      const nodeObj = objType === "Function"
-        // Functions are special
-        ? constructor(nodeString)
-        : Object.assign(constructor(), JSON.parse(nodeString))
-        
+      const nodeObj = constructor(nodeString)     
       parsed.set(nodeId, nodeObj)
  
       for (const key in nodeObj) {
