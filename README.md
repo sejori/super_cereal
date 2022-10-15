@@ -1,7 +1,7 @@
 # Super Cereal 🥣
 
 Serialize and deserialize any object and all of its references. Supports:
-- Class (with simple inheritance set-up)
+- Class (with inheritance set-up)
 - Object
 - Array
 - Function
