@@ -1,7 +1,7 @@
 # Super Cereal 🥣
 
 Serialize and deserialize any object and all of its references. Supports:
-- Class (with simple inheritance set-up)
+- Class (with inheritance set-up)
 - Object
 - Array
 - Function
@@ -48,7 +48,7 @@ console.log(freshBob.friends);
 
 The Al-Gore-ithm does a depth-first-search, leaving unique IDs on non-primitive values. It then serializes and stores objects by ID, replacing all refs with the corresponding ID to "unlink" the structure so it never gets stuck in a circular reference loop.
 
-First instantiate a `Store`, then make your classes extend `Model` and call `super(store, arguments)` in their constuctors. This allows the store to hold onto constructor clones that reinstantiate the classes before using `Object.assign` to apply deserialized values.
+First instantiate a `Store`, then make your classes extend `Model` and call `super(store, arguments)` in their constuctors. This allows the store to reinstantiate them with their initial arguments before using `Object.assign` to apply deserialized property values.
 
 ## But why?
 
