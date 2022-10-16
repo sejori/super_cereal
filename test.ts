@@ -40,17 +40,17 @@ Deno.test("UTIL: Storage", async (t) => {
   const jim = new Person("Jim")
   bob.addFriend(jim)
 
-  // await t.step("circular ref object retains methods after serializing and deserializing", () => {
-  //   assert(bob.name === "Bob" && bob.friends.includes(jim))
+  await t.step("circular ref object retains methods after serializing and deserializing", () => {
+    assert(bob.name === "Bob" && bob.friends.includes(jim))
 
-  //   const jimId = jim.save()
-  //   const freshJim = store.load(jimId) as Person
-  //   freshJim.addHobby(fencing)
+    const jimId = jim.save()
+    const freshJim = store.load(jimId) as Person
+    freshJim.addHobby(fencing)
 
-  //   assert(jim !== freshJim)
-  //   assert(freshJim.hobbies[0].getTitle() === "fencing")
-  //   assert(freshJim.friends[0].name === "Bob")
-  // }) 
+    assert(jim !== freshJim)
+    assert(freshJim.hobbies[0].getTitle() === "fencing")
+    assert(freshJim.friends[0].name === "Bob")
+  }) 
 
   await t.step("array retains all non-primitive items & sets retain primitive types", () => {
     const now = new Date()
