@@ -2,7 +2,7 @@ import { assert } from "https://deno.land/std@0.150.0/testing/asserts.ts"
 import { Store, Model } from "./mod.ts"
 
 Deno.test("UTIL: Storage", async (t) => {
-  const store = new Store()
+  const store = new Store(new Map())
 
   class Person extends Model {
     name: string
@@ -81,5 +81,32 @@ Deno.test("UTIL: Storage", async (t) => {
     assert(freshArray[6](5) === 25)
     assert(freshArray[7](3) === 9)
     assert(freshArray[8](7, 8) === 56)
+  }) 
+
+  await t.step("custom storage functions used properly", () => {
+    const storeObj: Record<string, string> = {}
+
+    const store = new Store({
+      get: (id: string) => storeObj[id],
+      set: (id:string, value: string) => storeObj[id] = value
+    })
+
+    class List extends Model {
+      things: string[]
+      constructor(things: string[]) {
+        super(store, arguments)
+        this.things = things
+      }
+    }
+
+    const list = new List(["swords", "sandals"])
+    const listId = list.save()
+
+    assert(Object.values(storeObj).some(value => value.includes("List")))
+
+    const freshList = store.load(listId) as List
+
+    assert(freshList.things[0] === "swords")
+    assert(freshList.things[1] === "sandals")
   }) 
 })

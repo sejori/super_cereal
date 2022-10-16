@@ -16,7 +16,12 @@ Serialize and deserialize any object and all of its references. Supports:
 ```
 import { Store, Model } from "./mod.ts";
 
-const store = new Store();
+const storeObj: Record<string, string> = {};
+
+const store = new Store({
+  get: (id: string) => storeObj[id],
+  set: (id:string, value: string) => storeObj[id] = value
+});
 
 class Person extends Model {
   name: string;
@@ -37,13 +42,15 @@ const jim = new Person("Jim");
 const bob = new Person("Bob");
 jim.addFriend(bob);
 
-const bobId = bob.save();
-const freshBob = store.load(bobId) as Person;
+const jimId = jim.save();
+const freshJim = store.load(jimId) as Person;
+
+console.log(freshJim.friends);
 
 const steve = new Person("Steve");
-freshBob.addFriend(steve);
+freshJim.addFriend(steve);
 
-console.log(freshBob.friends);
+console.log(freshJim.friends);
 ```
 
 The Al-Gore-ithm does a depth-first-search, leaving unique IDs on non-primitive values. It then serializes and stores objects by ID, replacing all refs with the corresponding ID to "unlink" the structure so it never gets stuck in a circular reference loop.

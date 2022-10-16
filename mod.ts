@@ -1,12 +1,19 @@
-import { serialize, parseFcnString, replacer } from "./utils.ts"
+import { serialize, parseFcnString } from "./utils.ts"
+
+interface SerializedStorage {
+  get: (nodeId:string) => Promise<string> | Promise<undefined> | string | undefined,
+  set: (nodeId:string, nodeStr: string) => Promise<string> | Promise<void> | string | void,
+}
 
 export class Store {
   code = crypto.randomUUID()
   constructors = new Map()
-  serialized = new Map()
+  serialized: SerializedStorage | Map<string, string>
   deserialised = new Map()
 
-  constructor() {
+  constructor(serializedStorage: SerializedStorage | Map<string, string>) {
+    this.serialized = serializedStorage
+
     this.constructors.set("Object", (nodeStr: string): Record<string, unknown> => Object.assign({}, JSON.parse(nodeStr)))
     this.constructors.set("Array", (nodeStr: string): unknown[] => Object.assign([], JSON.parse(nodeStr)))
     this.constructors.set("Date", (nodeStr: string) => new Date(nodeStr))
@@ -63,7 +70,7 @@ export class Store {
       if (this.deserialised.has(nodeObj[key])) {
         // replace id with object ref
         nodeObj[key] = this.deserialised.get(nodeObj[key])
-      } else if (this.serialized.has(nodeObj[key])) {
+      } else if (this.serialized.get(nodeObj[key])) {
         // otherwise deserialize next object from id
         nodeObj[key] = this.load(nodeObj[key])
       }
