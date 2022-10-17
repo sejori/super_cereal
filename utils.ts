@@ -1,18 +1,16 @@
-// deno-lint-ignore no-explicit-any
-export function serialize (node: any) {
+export function serialize (node: unknown) {
   if (node instanceof Function) {
     return node.toString()
   }
 
   if (node instanceof Date) {
-    return node.valueOf()
+    return node.valueOf().toString()
   }
 
   return JSON.stringify(node, replacer)
 }
 
-// deno-lint-ignore no-explicit-any
-export function replacer (_key: string, value: any) {
+export function replacer (_key: string, value: unknown) {
   if (value instanceof Map) {
     return [...value.entries()]
   }

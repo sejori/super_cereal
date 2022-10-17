@@ -16,7 +16,7 @@ export class Store {
 
     this.constructors.set("Object", (nodeStr: string): Record<string, unknown> => Object.assign({}, JSON.parse(nodeStr)))
     this.constructors.set("Array", (nodeStr: string): unknown[] => Object.assign([], JSON.parse(nodeStr)))
-    this.constructors.set("Date", (nodeStr: string) => new Date(nodeStr))
+    this.constructors.set("Date", (nodeStr: string) => new Date(Number(nodeStr)))
     this.constructors.set("Set", (nodeStr: string) => {
       const set = new Set()
       this.constructors.get("Array")(nodeStr).forEach((item: string) => set.add(item))
@@ -33,6 +33,7 @@ export class Store {
     })
   }
   
+  // https://github.com/microsoft/TypeScript/issues/47357#issuecomment-1249977221
   // deno-lint-ignore no-explicit-any
   save(node: any) {
     // DFS - assign unique id to nodes for breadcrumbs
