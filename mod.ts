@@ -8,11 +8,11 @@ interface SerializedStorage {
 export class Store {
   code = crypto.randomUUID()
   constructors = new Map()
-  serialized: SerializedStorage | Map<string, string>
-  deserialised = new Map()
+  #serialized: SerializedStorage | Map<string, string>
+  #deserialised = new Map()
 
-  constructor(serializedStorage: SerializedStorage | Map<string, string>) {
-    this.serialized = serializedStorage
+  constructor(serialized: SerializedStorage | Map<string, string>) {
+    this.#serialized = serialized
 
     this.constructors.set("Object", (nodeStr: string): Record<string, unknown> => Object.assign({}, JSON.parse(nodeStr)))
     this.constructors.set("Array", (nodeStr: string): unknown[] => Object.assign([], JSON.parse(nodeStr)))
@@ -49,7 +49,7 @@ export class Store {
     }
 
     const serialized = serialize(node)
-    this.serialized.set(node[this.code], serialized)
+    this.#serialized.set(node[this.code], serialized)
     return node[this.code]
   }
 
@@ -58,20 +58,20 @@ export class Store {
     const constructor = this.constructors.get(objType)
     if (!constructor) throw new Error(`No constructor found for ${objType} in id ${nodeId}`)
     
-    const nodeString = this.serialized.get(nodeId)
+    const nodeString = this.#serialized.get(nodeId)
     if (!nodeString) throw new Error(`No node string found for item with id ${nodeId}`)
 
     const nodeObj = constructor(nodeString)     
-    this.deserialised.set(nodeId, nodeObj)
+    this.#deserialised.set(nodeId, nodeObj)
 
     for (const key in nodeObj) {
       // remove store code property
       if (nodeObj[key] === nodeId) delete nodeObj[key]
 
-      if (this.deserialised.has(nodeObj[key])) {
+      if (this.#deserialised.has(nodeObj[key])) {
         // replace id with object ref
-        nodeObj[key] = this.deserialised.get(nodeObj[key])
-      } else if (this.serialized.get(nodeObj[key])) {
+        nodeObj[key] = this.#deserialised.get(nodeObj[key])
+      } else if (this.#serialized.get(nodeObj[key])) {
         // otherwise deserialize next object from id
         nodeObj[key] = this.load(nodeObj[key])
       }
