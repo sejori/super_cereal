@@ -1,15 +1,17 @@
 # Super Cereal 🥣
 
-Serialize and deserialize any object and all of its references. Supports:
-- Class (with inheritance set-up)
-- Object
-- Array
-- Function
-- Map
-- Set
-- Date
+Serialize and deserialize any object. Supports:
+- Primitive values
+- Circular references
+- Classes (must extend `Model`)
+- Objects
+- Arrays
+- Functions
+- Maps
+- Sets
+- Dates
 
-**TL;DR:** You get to keep your lovely graph structure (even if its circular 🤯) and all of your lovely class methods too.
+**TL;DR:** You get to keep your lovely graph structure and all of your lovely class methods too.
 
 ## But how?
 
