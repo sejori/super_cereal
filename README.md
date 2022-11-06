@@ -1,17 +1,17 @@
 # Super Cereal 🥣
 
-(De)serialize any object/class structure for key value storage.
+Serialize any in-memory object graph into key/values pairs. Deserialize from any object key.
 
-Supports the following property values:
-- Primitive values
-- Circular references
-- Classes (must extend `Model`)
-- Objects
-- Arrays
-- Functions
-- Maps
-- Sets
-- Dates
+Supports the following property types:
+- Primitive
+- Class (must extend `Model`)
+- Object (with circular refs)
+- Array
+- Function
+- Map
+- Set
+- Map
+- Date
 
 **TL;DR:** You get to keep your lovely graph structure and all of your lovely class methods too.
 
