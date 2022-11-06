@@ -1,6 +1,6 @@
 # Super Cereal 🥣
 
-Serialize any in-memory object graph into key/values pairs. Deserialize from any object key.
+Serialize any in-memory object graph into key/value pair storage.
 
 Supports the following property types:
 - Primitive
