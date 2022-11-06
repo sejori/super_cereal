@@ -1,6 +1,8 @@
 # Super Cereal 🥣
 
-Serialize and deserialize any object. Supports the following property values:
+(De)serialize any object/class structure for key value storage.
+
+Supports the following property values:
 - Primitive values
 - Circular references
 - Classes (must extend `Model`)
