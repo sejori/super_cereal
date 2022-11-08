@@ -24,7 +24,7 @@ const storeObj: Record<string, string> = {};
 
 const store = new Store({
   get: (id: string) => storeObj[id],
-  set: (id:string, value: string) => storeObj[id] = value
+  set: (id: string, value: string) => storeObj[id] = value
 });
 
 class Person extends Model {
