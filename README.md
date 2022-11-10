@@ -1,15 +1,19 @@
 # Super Cereal 🥣
 
-Serialize and deserialize any object and all of its references. Supports:
-- Class (with inheritance set-up)
-- Object
+Serialize any in-memory object graph into key/value pair storage. Deserialize from any object in the structure.
+
+Supports the following property types:
+- Primitive
+- Class (must extend `Model`)
+- Object (with circular refs)
 - Array
 - Function
 - Map
 - Set
+- Map
 - Date
 
-**TL;DR:** You get to keep your lovely graph structure (even if its circular 🤯) and all of your lovely class methods too.
+**TL;DR:** You get to keep your lovely graph structure and all of your lovely class methods too.
 
 ## But how?
 
@@ -20,7 +24,7 @@ const storeObj: Record<string, string> = {};
 
 const store = new Store({
   get: (id: string) => storeObj[id],
-  set: (id:string, value: string) => storeObj[id] = value
+  set: (id: string, value: string) => storeObj[id] = value
 });
 
 class Person extends Model {
