@@ -7,30 +7,34 @@ interface SerializedStorage {
 
 export class Store {
   code = crypto.randomUUID()
-  constructors = new Map()
+  #constructors = new Map()
   #serialized: SerializedStorage | Map<string, string>
   #deserialised = new Map()
 
   constructor(serialized: SerializedStorage | Map<string, string>) {
     this.#serialized = serialized
 
-    this.constructors.set("Object", (nodeStr: string): Record<string, unknown> => Object.assign({}, JSON.parse(nodeStr)))
-    this.constructors.set("Array", (nodeStr: string): unknown[] => Object.assign([], JSON.parse(nodeStr)))
-    this.constructors.set("Date", (nodeStr: string) => new Date(Number(nodeStr)))
-    this.constructors.set("Set", (nodeStr: string) => {
+    this.addConstructor("Object", (nodeStr: string): Record<string, unknown> => Object.assign({}, JSON.parse(nodeStr)))
+    this.addConstructor("Array", (nodeStr: string): unknown[] => Object.assign([], JSON.parse(nodeStr)))
+    this.addConstructor("Date", (nodeStr: string) => new Date(Number(nodeStr)))
+    this.addConstructor("Set", (nodeStr: string) => {
       const set = new Set()
-      this.constructors.get("Array")(nodeStr).forEach((item: string) => set.add(item))
+      this.#constructors.get("Array")(nodeStr).forEach((item: string) => set.add(item))
       return set
     })
-    this.constructors.set("Map", (nodeStr: string) => {
+    this.addConstructor("Map", (nodeStr: string) => {
       const map = new Map()
-      this.constructors.get("Array")(nodeStr).forEach(([key,value]: [key: string, value: string]) => map.set(key, value))
+      this.#constructors.get("Array")(nodeStr).forEach(([key,value]: [key: string, value: string]) => map.set(key, value))
       return map
     })
-    this.constructors.set("Function", (nodeStr: string) => {
+    this.addConstructor("Function", (nodeStr: string) => {
       const fcn = parseFcnString(nodeStr)
       return fcn
     })
+  }
+
+  addConstructor(name: string, fcn: (nodeStr: string) => unknown) {
+    this.#constructors.set(name, fcn)
   }
   
   // https://github.com/microsoft/TypeScript/issues/47357#issuecomment-1249977221
@@ -55,7 +59,7 @@ export class Store {
 
   load(nodeId: string) {
     const objType = nodeId.slice(0, nodeId.indexOf("+"))
-    const constructor = this.constructors.get(objType)
+    const constructor = this.#constructors.get(objType)
     if (!constructor) throw new Error(`No constructor found for ${objType} in id ${nodeId}`)
     
     const nodeString = this.#serialized.get(nodeId)
@@ -88,7 +92,7 @@ export class Model {
     const This = Object.getPrototypeOf(this).constructor
 
     this.#storage = store
-    this.#storage.constructors.set(This.name, 
+    this.#storage.addConstructor(This.name, 
       (nodeStr: string) => {
         return Object.assign(new This(...constructArgs), JSON.parse(nodeStr))
       }

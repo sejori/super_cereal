@@ -10,7 +10,7 @@ export function serialize (node: unknown) {
   return JSON.stringify(node, replacer)
 }
 
-export function replacer (_key: string, value: unknown) {
+function replacer (_key: string, value: unknown) {
   if (value instanceof Map) {
     return [...value.entries()]
   }
