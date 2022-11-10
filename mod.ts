@@ -70,7 +70,7 @@ export class Store {
 
     for (const key in nodeObj) {
       // remove store code property
-      if (nodeObj[key] === nodeId) delete nodeObj[key]
+      if (key === this.code) delete nodeObj[key]
 
       if (this.#deserialised.has(nodeObj[key])) {
         // replace id with object ref
