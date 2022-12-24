@@ -2,7 +2,7 @@ import { assert } from "https://deno.land/std@0.150.0/testing/asserts.ts"
 import { Store, Model } from "./mod.ts"
 
 Deno.test("super_cereal", async (t) => {
-  const store = new Store(new Map())
+  const store = new Store()
 
   class Person extends Model {
     name: string
@@ -43,8 +43,8 @@ Deno.test("super_cereal", async (t) => {
   await t.step("circular ref object retains methods after serializing and deserializing", () => {
     assert(bob.name === "Bob" && bob.friends.includes(jim))
 
-    const jimId = jim.save()
-    const freshJim = store.load(jimId) as Person
+    const { nodeId } = jim.save()
+    const freshJim = store.load(nodeId) as Person
     freshJim.addHobby(fencing)
 
     assert(jim !== freshJim)
@@ -66,10 +66,10 @@ Deno.test("super_cereal", async (t) => {
       (x: number) => { return x * x },
       (x: number, y: number) => x * y
     ]
-    const arrayId = store.save(testArray)
+    const { nodeId } = store.save(testArray)
 
     // deno-lint-ignore no-explicit-any
-    const freshArray = store.load(arrayId) as Array<any>
+    const freshArray = store.load(nodeId) as Array<any>
 
     assert(freshArray[0].hello = "world")
     // deno-lint-ignore no-explicit-any
@@ -83,32 +83,46 @@ Deno.test("super_cereal", async (t) => {
     assert(freshArray[8](7, 8) === 56)
   }) 
 
-  await t.step("custom storage functions used properly", () => {
-    const storeObj: Record<string, string> = {}
-
-    const store = new Store({
-      get: (id: string) => storeObj[id],
-      set: (id:string, value: string) => storeObj[id] = value
-    })
+  let lex_nodeId: string | undefined
+  let lex_map: Map<string, string> | undefined
+  await t.step("serialized map returned as expected", () => {
+    const store1 = new Store()
 
     class List extends Model {
       things: string[]
       constructor(things: string[]) {
-        super(store, arguments)
+        super(store1, arguments)
         this.things = things
       }
     }
 
     const list = new List(["swords", "sandals"])
-    const listId = list.save()
+    const {nodeId, map} = list.save()
 
-    assert(Object.values(storeObj).some(value => value.includes("List")))
+    lex_nodeId = nodeId
+    lex_map = map
 
-    const freshList = store.load(listId) as List
-
-    assert(freshList.things[0] === "swords")
-    assert(freshList.things[1] === "sandals")
+    assert(lex_nodeId)
+    assert(lex_map.size > 0)
   }) 
+
+  await t.step("providing map works", () => {
+    const store2 = new Store(lex_map)
+
+    class List extends Model {
+      things: string[]
+      constructor(things: string[]) {
+        super(store2, arguments)
+        this.things = things
+      }
+    }
+    new List(["test"])
+
+    const fresh_list = store2.load(lex_nodeId!)
+
+    assert(fresh_list.things[0] === "swords")
+    assert(fresh_list.things[1] === "sandals")
+  })
 
   await t.step("inheritance serialization", () => {
     class Employee extends Person {
@@ -121,60 +135,27 @@ Deno.test("super_cereal", async (t) => {
     }
 
     const test_employee = new Employee("Kevin", "engineer")
-    const id = test_employee.save()
-    const fresh_employee = store.load(id)
+    const { nodeId } = test_employee.save()
+    const fresh_employee = store.load(nodeId)
     
     assert(fresh_employee.job === "engineer" && fresh_employee.name === "Kevin")
   })
 
-  await t.step("request/response body objects, URL and Headers serialization", async () => {
-    // this is tricky... can't unlink request/response/URL object parts as they are fixed.
-    // probs not going to be a feature of this tool. Instead better to stick to serializing
-    // easy objects and build things like responses at runtime.
-    // If things like Blobs or Buffers need to be serialized simply save them to a file.
-    const testString = new String("Hello, can you read this?")
-    const url = new URL(import.meta.url)
-    const headers = new Headers({ "Content-Type": "multipart/form-data" })
-    const blob = new Blob([testString.toString()])
-    const buffer = new ArrayBuffer(testString.length)
-    const uint8arr = new Uint8Array(buffer)
-    const formData = new FormData()
-    const params = new URLSearchParams()
+  await t.step("response serialization", async () => {
+    const res = new Response("This is a test response!", {
+      status: 201,
+      statusText: "OK",
+      headers: new Headers({
+        "Content-Type": "text/plain"
+      })
+    })
 
-    for (let i = 0; i < testString.length; i++) {
-      uint8arr[i] = Number(testString[i])
-      formData.set(String(i), testString[i])
-      params.set(String(i), testString[i])
-    }
+    const { nodeId } = store.save(res)
+    const fresh_res = store.load(nodeId) as Response
 
-    const string_id = store.save(testString)
-    const url_id = store.save(url)
-    const headers_id = store.save(headers)
-    const blob_id = store.save(blob)
-    const buffer_id = store.save(buffer)
-    const uint8arr_id = store.save(uint8arr)
-    const formData_id = store.save(formData)
-    const params_id = store.save(params)
-
-    const string_fresh = store.load(string_id) as string
-    const url_fresh = store.load(url_id) as URL
-    const headers_fresh = store.load(headers_id) as Headers
-    const blob_fresh = store.load(blob_id) as Blob
-    const buffer_fresh = store.load(buffer_id) as ArrayBuffer
-    const uint8arr_fresh = store.load(uint8arr_id) as Uint32Array
-    const formData_fresh = store.load(formData_id) as FormData
-    const params_fresh = store.load(params_id) as URLSearchParams
-
-    assert(string_fresh.toString() === testString.toString())
-    assert(url_fresh.hash === import.meta.url)
-    assert(headers_fresh.get("Content-Type") === "multipart/form-data")
-    assert(await blob_fresh.text() === testString.toString())
-
-    for (let i = 0; i < testString.length; i++) {
-      assert(new Uint16Array(buffer_fresh)[i] === Number(testString[i]))
-      assert(uint8arr_fresh[i] === Number(testString[i]))
-      assert(formData_fresh.get(String(i)) === testString[i])
-      assert(params_fresh.get(String(i)) === testString[i])
-    }
+    assert(await fresh_res.text() === "This is a test response!")
+    assert(fresh_res.status === 204)
+    assert(fresh_res.statusText === "OK")
+    assert(fresh_res.headers.get("Content-Type") === "text/plain")
   })
 })

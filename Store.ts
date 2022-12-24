@@ -1,18 +1,14 @@
 import { serialize, parseFcnString } from "./utils.ts"
 
-interface SerializedStorage {
-  get: (nodeId:string) => Promise<string> | Promise<undefined> | string | undefined,
-  set: (nodeId:string, nodeStr: string) => Promise<string> | Promise<void> | string | void,
-}
-
 export class Store {
   code = `_${crypto.randomUUID()}`
-  #constructors = new Map()
-  #serialized: SerializedStorage | Map<string, string>
-  #deserialised = new Map()
+  // deno-lint-ignore no-explicit-any
+  #constructors: Map<string, any> = new Map()
+  #serialized: Map<string, string> = new Map()
+  #deserialised: Map<string, unknown> = new Map()
 
-  constructor(serialized: SerializedStorage | Map<string, string>) {
-    this.#serialized = serialized
+  constructor(serializedMap?: Map<string, string>) {
+    if (serializedMap) this.#serialized = serializedMap
 
     this.addConstructor("Object", (nodeStr: string): Record<string, unknown> => Object.assign({}, JSON.parse(nodeStr)))
     this.addConstructor("Array", (nodeStr: string): unknown[] => Object.assign([], JSON.parse(nodeStr)))
@@ -39,7 +35,7 @@ export class Store {
   
   // https://github.com/microsoft/TypeScript/issues/47357#issuecomment-1249977221
   // deno-lint-ignore no-explicit-any
-  save(node: any): string {
+  save(node: any): { nodeId: string, map: Map<string, string> } {
     // DFS - assign unique id to nodes for breadcrumbs
     // then replace refs with linked node id and stringify to items
     const proto = Object.getPrototypeOf(node)
@@ -52,9 +48,11 @@ export class Store {
       }
     }
 
+    // change this to build and return map instead of hold within storage
+
     const serialized = serialize(node)
     this.#serialized.set(node[this.code], serialized)
-    return node[this.code]
+    return { nodeId: node[this.code], map: this.#serialized }
   }
 
   load(nodeId: string) {
