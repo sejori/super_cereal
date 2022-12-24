@@ -126,4 +126,55 @@ Deno.test("super_cereal", async (t) => {
     
     assert(fresh_employee.job === "engineer" && fresh_employee.name === "Kevin")
   })
+
+  await t.step("request/response body objects, URL and Headers serialization", async () => {
+    // this is tricky... can't unlink request/response/URL object parts as they are fixed.
+    // probs not going to be a feature of this tool. Instead better to stick to serializing
+    // easy objects and build things like responses at runtime.
+    // If things like Blobs or Buffers need to be serialized simply save them to a file.
+    const testString = new String("Hello, can you read this?")
+    const url = new URL(import.meta.url)
+    const headers = new Headers({ "Content-Type": "multipart/form-data" })
+    const blob = new Blob([testString.toString()])
+    const buffer = new ArrayBuffer(testString.length)
+    const uint8arr = new Uint8Array(buffer)
+    const formData = new FormData()
+    const params = new URLSearchParams()
+
+    for (let i = 0; i < testString.length; i++) {
+      uint8arr[i] = Number(testString[i])
+      formData.set(String(i), testString[i])
+      params.set(String(i), testString[i])
+    }
+
+    const string_id = store.save(testString)
+    const url_id = store.save(url)
+    const headers_id = store.save(headers)
+    const blob_id = store.save(blob)
+    const buffer_id = store.save(buffer)
+    const uint8arr_id = store.save(uint8arr)
+    const formData_id = store.save(formData)
+    const params_id = store.save(params)
+
+    const string_fresh = store.load(string_id) as string
+    const url_fresh = store.load(url_id) as URL
+    const headers_fresh = store.load(headers_id) as Headers
+    const blob_fresh = store.load(blob_id) as Blob
+    const buffer_fresh = store.load(buffer_id) as ArrayBuffer
+    const uint8arr_fresh = store.load(uint8arr_id) as Uint32Array
+    const formData_fresh = store.load(formData_id) as FormData
+    const params_fresh = store.load(params_id) as URLSearchParams
+
+    assert(string_fresh.toString() === testString.toString())
+    assert(url_fresh.hash === import.meta.url)
+    assert(headers_fresh.get("Content-Type") === "multipart/form-data")
+    assert(await blob_fresh.text() === testString.toString())
+
+    for (let i = 0; i < testString.length; i++) {
+      assert(new Uint16Array(buffer_fresh)[i] === Number(testString[i]))
+      assert(uint8arr_fresh[i] === Number(testString[i]))
+      assert(formData_fresh.get(String(i)) === testString[i])
+      assert(params_fresh.get(String(i)) === testString[i])
+    }
+  })
 })
