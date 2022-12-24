@@ -1,7 +1,7 @@
 import { assert } from "https://deno.land/std@0.150.0/testing/asserts.ts"
 import { Store, Model } from "./mod.ts"
 
-Deno.test("UTIL: Storage", async (t) => {
+Deno.test("super_cereal", async (t) => {
   const store = new Store(new Map())
 
   class Person extends Model {
@@ -32,7 +32,7 @@ Deno.test("UTIL: Storage", async (t) => {
       this.#title = title
     }
 
-    getTitle () { return this.#title }
+    getTitle() { return this.#title }
   }
 
   const fencing = new Hobby("fencing")
@@ -109,4 +109,21 @@ Deno.test("UTIL: Storage", async (t) => {
     assert(freshList.things[0] === "swords")
     assert(freshList.things[1] === "sandals")
   }) 
+
+  await t.step("inheritance serialization", () => {
+    class Employee extends Person {
+      job: string
+
+      constructor(name: string, job_title: string) {
+        super(name)
+        this.job = job_title
+      }
+    }
+
+    const test_employee = new Employee("Kevin", "engineer")
+    const id = test_employee.save()
+    const fresh_employee = store.load(id)
+    
+    assert(fresh_employee.job === "engineer" && fresh_employee.name === "Kevin")
+  })
 })
