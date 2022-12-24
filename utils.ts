@@ -1,10 +1,17 @@
-export function serialize (node: unknown) {
+export async function serialize (node: unknown): Promise<string> {
   if (node instanceof Function) {
     return node.toString()
   }
 
   if (node instanceof Date) {
     return node.valueOf().toString()
+  }
+
+  if (node instanceof Response) node = {
+    body: await node.text(),
+    status: node.status,
+    statusText: node.statusText,
+    headers: [...node.headers.entries()]
   }
 
   return JSON.stringify(node, replacer)

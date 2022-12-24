@@ -2,7 +2,7 @@ import { assert } from "https://deno.land/std@0.150.0/testing/asserts.ts"
 import { Store, Model } from "./mod.ts"
 
 Deno.test("super_cereal", async (t) => {
-  const store = new Store(new Map())
+  const store = new Store()
 
   class Person extends Model {
     name: string
@@ -35,16 +35,16 @@ Deno.test("super_cereal", async (t) => {
     getTitle() { return this.#title }
   }
 
-  const fencing = new Hobby("fencing")
-  const bob = new Person("Bob")
-  const jim = new Person("Jim")
-  bob.addFriend(jim)
+  await t.step("circular ref object retains methods after serializing and deserializing", async () => {
+    const fencing = new Hobby("fencing")
+    const bob = new Person("Bob")
+    const jim = new Person("Jim")
+    bob.addFriend(jim)
 
-  await t.step("circular ref object retains methods after serializing and deserializing", () => {
     assert(bob.name === "Bob" && bob.friends.includes(jim))
 
-    const jimId = jim.save()
-    const freshJim = store.load(jimId) as Person
+    const nodeId = await jim.save()
+    const freshJim = await store.load(nodeId) as Person
     freshJim.addHobby(fencing)
 
     assert(jim !== freshJim)
@@ -52,7 +52,7 @@ Deno.test("super_cereal", async (t) => {
     assert(freshJim.friends[0].name === "Bob")
   }) 
 
-  await t.step("array retains all non-primitive items & sets retain primitive types", () => {
+  await t.step("array retains all non-primitive items & sets retain primitive types", async () => {
     const now = new Date()
 
     const testArray = [
@@ -66,10 +66,10 @@ Deno.test("super_cereal", async (t) => {
       (x: number) => { return x * x },
       (x: number, y: number) => x * y
     ]
-    const arrayId = store.save(testArray)
+    const nodeId = await store.save(testArray)
 
     // deno-lint-ignore no-explicit-any
-    const freshArray = store.load(arrayId) as Array<any>
+    const freshArray = await store.load(nodeId) as Array<any>
 
     assert(freshArray[0].hello = "world")
     // deno-lint-ignore no-explicit-any
@@ -83,7 +83,7 @@ Deno.test("super_cereal", async (t) => {
     assert(freshArray[8](7, 8) === 56)
   }) 
 
-  await t.step("custom storage functions used properly", () => {
+  await t.step("custom storage functions used properly", async () => {
     const storeObj: Record<string, string> = {}
 
     const store = new Store({
@@ -100,17 +100,17 @@ Deno.test("super_cereal", async (t) => {
     }
 
     const list = new List(["swords", "sandals"])
-    const listId = list.save()
+    const listId = await list.save()
 
     assert(Object.values(storeObj).some(value => value.includes("List")))
 
-    const freshList = store.load(listId) as List
+    const freshList = await store.load(listId) as List
 
     assert(freshList.things[0] === "swords")
     assert(freshList.things[1] === "sandals")
-  }) 
+  })
 
-  await t.step("inheritance serialization", () => {
+  await t.step("inheritance serialization", async () => {
     class Employee extends Person {
       job: string
 
@@ -121,9 +121,39 @@ Deno.test("super_cereal", async (t) => {
     }
 
     const test_employee = new Employee("Kevin", "engineer")
-    const id = test_employee.save()
-    const fresh_employee = store.load(id)
+    const nodeId = await test_employee.save()
+    const fresh_employee = await store.load(nodeId) as Employee
     
     assert(fresh_employee.job === "engineer" && fresh_employee.name === "Kevin")
+  })
+
+  await t.step("response serialization", async () => {
+    const res1 = new Response("This is a test response!", {
+      status: 201,
+      statusText: "OK",
+      headers: new Headers({
+        "Content-Type": "text/plain"
+      })
+    })
+
+    const res2 = new Response(JSON.stringify({ test: 52, hands: "7" }), {
+      headers: new Headers({
+        "Content-Type": "application/json"
+      })
+    })
+
+    const nodeId1 = await store.save(res1)
+    const nodeId2 = await store.save(res2)
+    const fresh_res1 = await store.load(nodeId1) as Response
+    const fresh_res2 = await store.load(nodeId2) as Response
+
+    assert(await fresh_res1.text() === "This is a test response!")
+    assert(fresh_res1.status === 201)
+    assert(fresh_res1.statusText === "OK")
+    assert(fresh_res1.headers.get("Content-Type") === "text/plain")
+
+    const res2_data = await fresh_res2.json()
+    assert(res2_data.test === 52 && res2_data.hands === "7")
+    assert(fresh_res2.headers.get("Content-Type") === "application/json")
   })
 })
