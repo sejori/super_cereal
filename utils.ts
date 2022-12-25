@@ -7,11 +7,23 @@ export async function serialize (node: unknown): Promise<string> {
     return node.valueOf().toString()
   }
 
-  if (node instanceof Response) node = {
-    body: await node.text(),
-    status: node.status,
-    statusText: node.statusText,
-    headers: [...node.headers.entries()]
+  if (node instanceof Response) {
+    const reader = new FileReader()
+    const bodyBlob = await node.blob()
+    reader.readAsDataURL(bodyBlob)
+
+    const bodyDataURL = await new Promise(res => {
+      reader.addEventListener("load", () => {
+        res(reader.result);
+      });
+    })
+
+    node = {
+      body: bodyDataURL,
+      status: node.status,
+      statusText: node.statusText,
+      headers: [...node.headers.entries()]
+    }
   }
 
   return JSON.stringify(node, replacer)

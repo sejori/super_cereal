@@ -1,5 +1,7 @@
 import { serialize, parseFcnString } from "./utils.ts"
 
+const encoder = new TextEncoder()
+
 interface Shelf {
   get: (nodeId:string) => Promise<string> | Promise<undefined> | string | undefined,
   set: (nodeId:string, nodeStr: string) => Promise<string> | Promise<void> | string | void,
