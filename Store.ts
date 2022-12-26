@@ -32,13 +32,13 @@ export class Store {
       const fcn = parseFcnString(nodeStr)
       return fcn
     })
-    this.addConstructor("Response", (nodeStr: string) => {
+    this.addConstructor("Response", async (nodeStr: string) => {
       const data = JSON.parse(nodeStr)
 
       const headers = new Headers()
       data.headers.forEach((entry: string[]) => headers.set(entry[0], entry[1]))
 
-      return new Response(data.body, {
+      return new Response((await fetch(data.body)).body, {
         status: data.status,
         statusText: data.statusText,
         headers
@@ -81,7 +81,7 @@ export class Store {
     const nodeString = await this.shelf.get(nodeId)
     if (!nodeString) throw new Error(`No node string found for item with id ${nodeId}`)
 
-    const nodeObj = constructor(nodeString)
+    const nodeObj = await constructor(nodeString)
     this.#basket.set(nodeId, nodeObj)
 
     for (const key in nodeObj) {

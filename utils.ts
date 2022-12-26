@@ -12,9 +12,9 @@ export async function serialize (node: unknown): Promise<string> {
     const bodyBlob = await node.blob()
     reader.readAsDataURL(bodyBlob)
 
-    const bodyDataURL = await new Promise(res => {
+    const bodyDataURL: string = await new Promise(res => {
       reader.addEventListener("load", () => {
-        res(reader.result);
+        res(reader.result as string);
       });
     })
 
